@@ -12,13 +12,16 @@
 	<script src="js/controllers.js"></script>
 	<script src="js/directives.js"></script>
 	<style>
-		.jumbotron { width: 550px; margin: 50px auto 0 auto; padding: 20px 50px  50px; }
+		.jumbotron, #footer { width: 550px; }
+		.jumbotron { margin: 50px auto 0 auto; padding: 20px 50px  50px; }
 		.form-control { margin-bottom: 5px; }
 		.fa-trash { color: #900; cursor: pointer; }
 		td select.form-control { margin: -5px 0 -10px 0; }
+		#footer { margin: 10px auto; }
 	</style>
 </head>
 <body ng-controller="pedidosCtrl">
+
 	<div class="jumbotron">
 		<div class="container">
 			<h3>Cardápio</h3>
@@ -123,7 +126,6 @@
 				Telefone deve seguir o formato XXXX-XXXX
 			</div>
 		</div>
-
 	</div>
 	<ng-include src="'inc/footer.html'"></ng-include>
 </body>
