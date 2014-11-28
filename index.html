@@ -5,62 +5,126 @@
 	<title>Pedidos</title>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 	<script src="js/angular.min.js"></script>
+	<script src="js/angular-locale_pt-br.js"></script>
 	<script src="js/app.js"></script>
 	<script src="js/controllers.js"></script>
+	<script src="js/directives.js"></script>
 	<style>
-		.jumbotron { width: 500px; margin: 50px auto 0 auto; padding: 20px 50px  50px; }
+		.jumbotron { width: 550px; margin: 50px auto 0 auto; padding: 20px 50px  50px; }
 		.form-control { margin-bottom: 5px; }
+		.fa-trash { color: #900; cursor: pointer; }
+		td select.form-control { margin: -5px 0 -10px 0; }
 	</style>
 </head>
 <body ng-controller="pedidosCtrl">
 	<div class="jumbotron">
-		<h3>Cardápio</h3>
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>Item</th>
-					<th>Preço</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr ng-repeat="item in cardapio">
-					<td>{{item.nome}}</td>
-					<td>{{item.preco | currency : "R$ "}}</td>
-				</tr>
-			</tbody>
-		</table>
-		<h3>Pedidos</h3>
-		<table ng-show="pedidos.length"  class="table table-striped">
-			<thead>
-				<tr>
-					<th>Item</th>
-					<th>Preço</th>
-					<th>Qtd</th>
-					<th>Total</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr ng-repeat="pedido in pedidos">
-					<td>{{pedido.item.nome}}</td>
-					<td>{{pedido.item.preco | currency : "R$ "}}</td>
-					<td>{{pedido.quantidade}}</td>
-					<td>{{pedido.item.preco * pedido.quantidade | currency : "R$ "}}</td>
-				</tr>
-				<tr>
-					<td colspan="3"><strong>Total</strong></td>
-					<td><strong>{{getTotal() | currency : "R$ "}}</strong></td>
-				</tr>
-			</tbody>
-		</table>
-		<p ng-hide="pedidos.length" class="text-warning">Não há pedidos no momento</p>
-		<form action="">
-			<select class="form-control" ng-model="pedido.item" ng-options="item.nome for item in cardapio">
-				<option value="">Selecione um item</option>
-			</select>
-			<input class="form-control" type="number" min="1" ng-model="pedido.quantidade" placeholder="Quantidade" ng-disabled="!pedido.item">
-			<button class="btn btn-primary btn-block" ng-click="salvarPedido(pedido);" ng-disabled="!pedido.quantidade || !pedido.item">Salvar pedido</button>
-		</form>
+		<div class="container">
+			<h3>Cardápio</h3>
+		</div>
+		<div class="col-sm-6">
+			<div class="input-group">
+				<span class="input-group-btn">
+					<button class="btn btn-default" type="button" ng-click="alterarOrdem()">
+						<i class="glyphicon" ng-class="{'glyphicon-sort-by-attributes': !ordemReversa, 'glyphicon-sort-by-attributes-alt': ordemReversa}"></i>
+					</button>
+				</span>
+				<select class="form-control" name="ordernar-por" ng-model="ordemCarpapio">
+					<option value="nome">Por nome</option>
+					<option value="preco">Por preço</option>
+				</select>
+			</div>
+		</div>
+		<div class="col-sm-6">
+			<div class="input-group">
+				<span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
+				<input class="form-control" type="text" placeholder="Filtro" ng-model="busca">
+			</div>
+		</div>
+		<div class="container">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>
+							<a href="" ng-click="ordernarCarpapio('nome')">Descrição</a>
+						</th>
+						<th>
+							<a href="" ng-click="ordernarCarpapio('preco')">Preço</a>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in cardapio | filter: busca | orderBy: ordemCarpapio: ordemReversa">
+						<td>{{item.nome}}</td>
+						<td>{{item.preco | currency}}</td>
+					</tr>
+				</tbody>
+			</table>
+			<h3>Pedidos</h3>
+			<table class="table table-striped" ng-show="pedidos.length">
+				<thead>
+					<tr>
+						<th width="20%">Telefone</th>
+						<th width="30%">Descrição</th>
+						<th>Preço</th>
+						<th class="text-center">Qtd</th>
+						<th>Subtotal</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="pedido in pedidos">
+						<td>{{pedido.telefone}}</div></td>
+						<td ng-click="editarItem(pedido, true)" >
+							<div ng-if="!pedido.editarItem">{{pedido.item.nome}}</div>
+							<div ng-if="pedido.editarItem">
+								<select class="form-control input-sm" name="item" novalidate ng-model="pedido.item" ng-options="item.nome for item in cardapio" ng-change="recalcularTotais(pedido);" ng-required="true" ng-blur="editarItem(pedido, false)">
+								</select>
+							</div>
+						</td>
+						<td>{{pedido.item.preco | currency}}</td>
+						<td class="text-center">{{pedido.quantidade}}</td>
+						<td>{{pedido.subtotal | currency}}</td>
+						<td>
+							<span ng-click="excluirPedido(pedido)">
+								<span class="fa fa-trash"></span>
+							</span>
+						</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="4"><strong>Total</strong></td>
+						<td><strong>{{total | currency}}</strong></td>
+						<td></td>
+					</tr>
+				</tfoot>
+			</table>
+			<p ng-hide="pedidos.length" class="text-warning">Não há pedidos no momento</p>
+			<form name="pedidoForm">
+				<select class="form-control" name="item" novalidate ng-model="pedido.item" ng-options="item.nome for item in cardapio" ng-required="true">
+					<option value="">Selecione um item</option>
+				</select>
+				<input class="form-control" name="quantidade" novalidate type="number" min="1" ng-model="pedido.quantidade" placeholder="Quantidade" ng-required="true">
+				<input type="text" class="form-control" name="telefone" novalidate placeholder="Telefone" ng-model="pedido.telefone" ng-required="true" ng-pattern="/^\d{4}-\d{4}$/">
+				<button class="btn btn-primary btn-block" ng-click="salvarPedido(pedido);" ng-disabled="pedidoForm.$invalid">Salvar pedido</button>
+			</form>
+			<div ng-show="pedidoForm.item.$dirty && pedidoForm.item.$error.required">
+				Item do pedido é obrigatório
+			</div>
+			<div ng-show="pedidoForm.quantidade.$dirty && pedidoForm.quantidade.$error.required">
+				Quantidade é obrigatória
+			</div>
+			<div ng-show="pedidoForm.telefone.$dirty && pedidoForm.telefone.$error.required">
+				Telefone é obrigatório
+			</div>
+			<div ng-show="pedidoForm.telefone.$dirty && pedidoForm.telefone.$error.pattern">
+				Telefone deve seguir o formato XXXX-XXXX
+			</div>
+		</div>
+
 	</div>
+	<ng-include src="'inc/footer.html'"></ng-include>
 </body>
 </html>

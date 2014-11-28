@@ -1,4 +1,7 @@
 app.controller("pedidosCtrl", function($scope) {
+	$scope.ordemCarpapio = "nome";
+	$scope.ordemReversa = false;
+
 	$scope.cardapio = [];
 	$scope.cardapio.push({nome: "X-Salada", preco: "7.5"});
 	$scope.cardapio.push({nome: "X-Frango", preco: "7"});
@@ -7,15 +10,39 @@ app.controller("pedidosCtrl", function($scope) {
 
 	$scope.pedidos = [];
 	$scope.salvarPedido = function(pedido) {
+		pedido.subtotal = calcularSubtotal(pedido);
 		$scope.pedidos.push(pedido);
 		delete $scope.pedido;
+		$scope.pedidoForm.$setPristine();
+		calcularTotal();
 	};
 
-	$scope.getTotal = function() {
-		var total = 0;
-		for (var i = 0; i < $scope.pedidos.length; i++) {
-			total += $scope.pedidos[i].item.preco * $scope.pedidos[i].quantidade;
-		}
-		return total;
-	}
+	$scope.excluirPedido = function(pedido) {
+		$scope.pedidos.splice($scope.pedidos.indexOf(pedido), 1);
+		calcularTotal();
+	};
+
+	$scope.recalcularTotais = function(pedido) {
+		pedido.subtotal = calcularSubtotal(pedido);
+		calcularTotal();
+	};
+
+	$scope.editarItem = function(pedido, value) {
+		pedido.editarItem = value;
+	};
+
+	$scope.alterarOrdem = function() {
+		$scope.ordemReversa = !$scope.ordemReversa;
+	};
+
+	var calcularSubtotal = function(pedido) {
+		return pedido.item.preco * pedido.quantidade;
+	};
+
+	var calcularTotal = function() {
+		$scope.total = 0;
+		angular.forEach($scope.pedidos, function(pedido) {
+			$scope.total += pedido.subtotal;
+		});
+	};
 });
